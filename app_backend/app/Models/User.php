@@ -2,47 +2,60 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory;
+    use Notifiable;
+    use HasApiTokens;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
     protected $fillable = [
         'name',
+        'surname',
         'email',
         'password',
+        'image',
+        'role',
+        'phone',
+        'bio',
+        'status',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
+    protected $casts = [
+        'email_verified_at' => 'datetime'
+    ];
+
+    // sada: jedan korisnik može imati više mesečnih izveštaja
+    public function savingsReports()
     {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
+        return $this->hasMany(SavingsReport::class);
+    }
+
+    public function groups()
+    {
+        return $this->belongsToMany(Group::class)
+                    ->withTimestamps();
+    }
+
+    public function createdGroups()
+    {
+        return $this->hasMany(Group::class, 'owner_id');
+    }
+
+    protected function password(): Attribute
+    {
+        return Attribute::make(
+            set: fn($value) => bcrypt($value)
+        );
     }
 }
