@@ -28,7 +28,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('logout', [AuthController::class, 'logout']);
 
     // Users (only regular & admin can list; only regular can CRUD)
-    Route::apiResource('users', UserController::class);
+    Route::apiResource('users', UserController::class)->only(['index', 'show', 'destroy']);
    
     // Groups (only regular)
     Route::apiResource('groups', GroupController::class);
