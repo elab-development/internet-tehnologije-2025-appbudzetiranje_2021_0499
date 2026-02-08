@@ -2,16 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\SavingsReport;
+use App\Models\Expense;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Resources\ExpenseResource;
 use Illuminate\Validation\Rule;
-use App\Http\Resources\SavingsReportResource;
+use Carbon\Carbon;
 
-class SavingsReportController extends Controller
+class ExpenseController extends Controller
 {
     /**
-     * List all monthly savings reports for the authenticated user.
+     * List all expenses for the authenticated user.
      * Accessible only by regular users.
      */
     public function index()
@@ -24,12 +25,15 @@ class SavingsReportController extends Controller
             return response()->json(['error' => 'You do not have permission.'], 403);
         }
 
-        $reports = SavingsReport::where('user_id', $user->id)->get();
-        return SavingsReportResource::collection($reports);
+        $expenses = Expense::whereHas('savingsReport', function($q) use ($user) {
+            $q->where('user_id', $user->id);
+        })->get();
+
+        return ExpenseResource::collection($expenses);
     }
 
     /**
-     * Create a new monthly savings report.
+     * Create a new expense.
      * Accessible only by regular users.
      */
     public function store(Request $request)
@@ -43,29 +47,43 @@ class SavingsReportController extends Controller
         }
 
         $data = $request->validate([
-            'year'  => 'required|integer|min:2000|max:2100',
-            'month' => [
+            'savings_report_id' => 'required|exists:savings_reports,id',
+            'amount'            => 'required|numeric',
+            'currency'          => 'required|string|size:3',
+            'description'       => 'required|string',
+            'date'              => 'required|date',
+            'category'          => [
                 'required',
-                'integer',
-                'between:1,12',
-                Rule::unique('savings_reports')
-                    ->where('user_id', $user->id)
+                Rule::in([
+                    'shopping',
+                    'food',
+                    'medicines',
+                    'sports_and_recreation',
+                    'entertainment',
+                    'bills',
+                ]),
             ],
-            'notes' => 'nullable|string',
+            'payment_method'    => 'required|in:cash,card',
+            'receipt_image'     => 'nullable|url',
+            'is_recurring'      => 'boolean',
+            'recurring_interval'=> 'nullable|string',
+            'tags'              => 'nullable|array',
+            'tags.*'            => 'string',
         ]);
 
-        $report = SavingsReport::create([
-            'user_id' => $user->id,
-            'year'    => $data['year'],
-            'month'   => $data['month'],
-            'notes'   => $data['notes'] ?? null,
-        ]);
+        // Ensure the savings report belongs to this user
+        $report = $user->savingsReports()->find($data['savings_report_id']);
+        if (! $report) {
+            return response()->json(['error' => 'Invalid savings report.'], 403);
+        }
 
-        return new SavingsReportResource($report);
+        $expense = Expense::create($data);
+
+        return new ExpenseResource($expense);
     }
 
     /**
-     * Show a specific monthly savings report.
+     * Show a single expense.
      * Accessible only by regular users.
      */
     public function show($id)
@@ -78,16 +96,20 @@ class SavingsReportController extends Controller
             return response()->json(['error' => 'You do not have permission.'], 403);
         }
 
-        $report = SavingsReport::find($id);
-        if (! $report || $report->user_id !== $user->id) {
-            return response()->json(['error' => 'Report not found.'], 404);
+        $expense = Expense::find($id);
+        if (! $expense) {
+            return response()->json(['error' => 'Expense not found.'], 404);
         }
 
-        return new SavingsReportResource($report);
+        if ($expense->savingsReport->user_id !== $user->id) {
+            return response()->json(['error' => 'You do not have permission.'], 403);
+        }
+
+        return new ExpenseResource($expense);
     }
 
     /**
-     * Update an existing monthly savings report.
+     * Update an existing expense.
      * Accessible only by regular users.
      */
     public function update(Request $request, $id)
@@ -100,21 +122,55 @@ class SavingsReportController extends Controller
             return response()->json(['error' => 'You do not have permission.'], 403);
         }
 
-        $report = SavingsReport::find($id);
-        if (! $report || $report->user_id !== $user->id) {
-            return response()->json(['error' => 'Report not found.'], 404);
+        $expense = Expense::find($id);
+        if (! $expense) {
+            return response()->json(['error' => 'Expense not found.'], 404);
+        }
+        if ($expense->savingsReport->user_id !== $user->id) {
+            return response()->json(['error' => 'You do not have permission.'], 403);
         }
 
         $data = $request->validate([
-            'notes' => 'nullable|string'
+            'savings_report_id' => 'sometimes|required|exists:savings_reports,id',
+            'amount'            => 'sometimes|required|numeric',
+            'currency'          => 'sometimes|required|string|size:3',
+            'description'       => 'sometimes|required|string',
+            'date'              => 'sometimes|required|date',
+            'category'          => [
+                'sometimes',
+                'required',
+                Rule::in([
+                    'shopping',
+                    'food',
+                    'medicines',
+                    'sports_and_recreation',
+                    'entertainment',
+                    'bills',
+                ]),
+            ],
+            'payment_method'    => 'sometimes|required|in:cash,card',
+            'receipt_image'     => 'nullable|url',
+            'is_recurring'      => 'boolean',
+            'recurring_interval'=> 'nullable|string',
+            'tags'              => 'nullable|array',
+            'tags.*'            => 'string',
         ]);
 
-        $report->update($data);
-        return new SavingsReportResource($report);
+        // If savings_report_id changed, re-validate ownership
+        if (isset($data['savings_report_id'])) {
+            $report = $user->savingsReports()->find($data['savings_report_id']);
+            if (! $report) {
+                return response()->json(['error' => 'Invalid savings report.'], 403);
+            }
+        }
+
+        $expense->update($data);
+
+        return new ExpenseResource($expense);
     }
 
     /**
-     * Delete a monthly savings report.
+     * Delete an expense.
      * Accessible only by regular users.
      */
     public function destroy($id)
@@ -127,21 +183,24 @@ class SavingsReportController extends Controller
             return response()->json(['error' => 'You do not have permission.'], 403);
         }
 
-        $report = SavingsReport::find($id);
-        if (! $report || $report->user_id !== $user->id) {
-            return response()->json(['error' => 'Report not found.'], 404);
+        $expense = Expense::find($id);
+        if (! $expense) {
+            return response()->json(['error' => 'Expense not found.'], 404);
+        }
+        if ($expense->savingsReport->user_id !== $user->id) {
+            return response()->json(['error' => 'You do not have permission.'], 403);
         }
 
-        $report->delete();
-        return response()->json(['message' => 'Report deleted successfully.'], 200);
+        $expense->delete();
+
+        return response()->json(['message' => 'Expense deleted successfully.'], 200);
     }
 
-      /**
-     * Retrieve statistics for the authenticated user's savings reports.
-     * Returns count, total and average expenses per report.
+    /**
+     * Patch-only update of the month part of the expense date.
      * Accessible only by regular users.
      */
-    public function statistics()
+    public function updateMonth(Request $request, $id)
     {
         $user = Auth::user();
         if (! $user) {
@@ -151,26 +210,23 @@ class SavingsReportController extends Controller
             return response()->json(['error' => 'You do not have permission.'], 403);
         }
 
-        $reports = SavingsReport::where('user_id', $user->id)
-            ->withCount('expenses')
-            ->withSum('expenses', 'amount')
-            ->get();
+        $expense = Expense::find($id);
+        if (! $expense) {
+            return response()->json(['error' => 'Expense not found.'], 404);
+        }
+        if ($expense->savingsReport->user_id !== $user->id) {
+            return response()->json(['error' => 'You do not have permission.'], 403);
+        }
 
-        $stats = $reports->map(function ($report) {
-            $count = $report->expenses_count;
-            $sum   = $report->expenses_sum_amount ?? 0;
-            $avg   = $count ? round($sum / $count, 2) : 0;
+        $data = $request->validate([
+            'month' => 'required|integer|between:1,12',
+        ]);
 
-            return [
-                'report_id'        => $report->id,
-                'year'             => $report->year,
-                'month'            => $report->month,
-                'expenses_count'   => $count,
-                'total_expenses'   => $sum,
-                'average_expense'  => $avg,
-            ];
-        });
+        $currentDate   = Carbon::parse($expense->date);
+        $newDate       = $currentDate->setMonth($data['month']);
+        $expense->date = $newDate->toDateString();
+        $expense->save();
 
-        return response()->json(['statistics' => $stats]);
+        return new ExpenseResource($expense);
     }
 }
