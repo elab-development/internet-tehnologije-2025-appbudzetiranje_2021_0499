@@ -9,7 +9,6 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            // 3 tipa korisnika (za zahtev predmeta)
             $table->enum('role', ['regular', 'administrator', 'premium'])
                 ->default('regular')
                 ->after('password');
@@ -18,8 +17,7 @@ return new class extends Migration
                 ->default('active')
                 ->after('role');
 
-            // profilna polja
-            $table->string('surname')->nullable()->after('name');
+            // profilna polja (surname je već u users tabeli)
             $table->string('phone')->nullable()->after('email');
             $table->text('bio')->nullable()->after('phone');
             $table->string('image')->nullable()->after('bio');
@@ -37,7 +35,7 @@ return new class extends Migration
 
             $table->dropColumn([
                 'role', 'status',
-                'surname', 'phone', 'bio', 'image',
+                'phone', 'bio', 'image',
             ]);
         });
     }
