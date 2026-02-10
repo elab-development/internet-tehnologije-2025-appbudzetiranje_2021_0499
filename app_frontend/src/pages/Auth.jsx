@@ -95,15 +95,10 @@ const handleSubmit = async e => {
 
     const { data } = await axios.post(url, payload)
 
-    if (!isRegister) {
-      // only persist on actual login
-      sessionStorage.setItem('token', data.token)
-      sessionStorage.setItem('user', JSON.stringify(data.user))
-      navigate('/home')
-    } else {
-      // after registering, go back to login screen
-      navigate('/')
-    }
+   sessionStorage.setItem('token', data.token)
+sessionStorage.setItem('user', JSON.stringify(data.user))
+
+navigate('/home')
   } catch (err) {
     setError(
   err.response?.data?.message ||
@@ -146,7 +141,7 @@ const handleSubmit = async e => {
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
           <Box
             component="img"
-            src="/images/logo.png"
+            src="/images/logoo.png"
             alt="Savely Logo"
             sx={{ width: 350, mr: 1 }}
 
@@ -416,7 +411,7 @@ const handleSubmit = async e => {
               ? 'Already have an account?'
               : "Don't have an account?"}{' '}
             <Link
-              to={isRegister ? '/' : '/register'}
+              to={isRegister ? '/login' : '/register'}
               style={{ color: '#40C4FF', textDecoration: 'none', fontWeight: 500 }}
             >
               {isRegister ? 'Login' : 'Create Account'}

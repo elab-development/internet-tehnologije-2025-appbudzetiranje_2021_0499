@@ -15,7 +15,7 @@ import {
 import { styled } from '@mui/material/styles'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import axios from 'axios'
-import { useNavigate } from 'react-router-dom'
+import {  useNavigate, useLocation } from 'react-router-dom'
 
 const Header = styled(AppBar)(({ theme }) => ({
   position: 'fixed',
@@ -30,7 +30,7 @@ const Header = styled(AppBar)(({ theme }) => ({
 }))
 
 const Logo = styled('img')({
-  height: 40,
+  height: 62,
   cursor: 'pointer',
 })
 
@@ -65,6 +65,8 @@ const NavLink = styled(Button)(({ theme }) => ({
 
 export default function NavigationMenu() {
   const navigate  = useNavigate()
+  const location = useLocation()
+
   const raw       = sessionStorage.getItem('user')
   const user      = raw ? JSON.parse(raw) : {}
   const token     = sessionStorage.getItem('token')
@@ -73,7 +75,7 @@ export default function NavigationMenu() {
   const items = [
     { label: 'Home',           path: '/home' },
     { label: 'Track Expenses', path: '/expenses' },
-    { label: 'Savings Reports',path: '/savings-reports' },
+    { label: 'Savings Reports',path: '/reports' },
   ]
 
   const handleMenuOpen = e => setAnchorEl(e.currentTarget)
@@ -101,7 +103,7 @@ export default function NavigationMenu() {
         {/* Logo */}
         <Box>
           <Logo
-            src="/images/logo.png"
+            src="/images/logoo.png"
             alt="Expense Tracker"
             onClick={() => navigate('/')}
           />
@@ -110,9 +112,17 @@ export default function NavigationMenu() {
         {/* Navigation links */}
         <Box>
           {items.map(item => (
-            <NavLink key={item.label} onClick={() => navigate(item.path)}>
-              {item.label}
-            </NavLink>
+            <NavLink
+  key={item.label}
+  onClick={() => navigate(item.path)}
+  sx={{
+    color: location.pathname.startsWith(item.path)
+      ? '#40C4FF'
+      : '#fff',
+  }}
+>
+  {item.label}
+</NavLink>
           ))}
         </Box>
 

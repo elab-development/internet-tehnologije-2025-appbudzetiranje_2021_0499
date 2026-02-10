@@ -70,19 +70,20 @@ export default function TrackExpenses() {
   const [apiErrors, setApiErrors] = useState({})
 
   // filter + sort
-  const filtered = useMemo(() => {
-    let arr = expenses
-    if (catFilter !== 'All') {
-      arr = arr.filter(e => e.category === catFilter)
-    }
-    return arr
-      .slice()
-      .sort((a, b) =>
-        sortOrder === 'asc'
-          ? a.amount - b.amount
-          : b.amount - a.amount
-      )
-  }, [expenses, catFilter, sortOrder])
+const filtered = useMemo(() => {
+  let arr = Array.isArray(expenses) ? expenses : []
+  if (catFilter !== 'All') {
+    arr = arr.filter(e => e.category === catFilter)
+  }
+  return arr
+    .slice()
+    .sort((a, b) =>
+      sortOrder === 'asc'
+        ? a.amount - b.amount
+        : b.amount - a.amount
+    )
+}, [expenses, catFilter, sortOrder])
+
 
   // pagination
   const pageCount = Math.ceil(filtered.length / ROWS_PER_PAGE)
@@ -107,7 +108,7 @@ export default function TrackExpenses() {
     setEditItem(exp)
     setForm({
       amount:            exp.amount,
-      date:              exp.date.slice(0,10),
+      date: exp?.date?.slice(0,10) || '',
       category:          exp.category,
       payment_method:    exp.payment_method,
       currency:          exp.currency,
@@ -145,7 +146,8 @@ export default function TrackExpenses() {
       recurring_interval:form.recurring_interval,
       tags:              form.tags,
       description:       form.description,
-      savings_report_id: form.savings_report_id
+      savings_report_id: Number(form.savings_report_id)
+
     }
     try {
       setApiErrors({})

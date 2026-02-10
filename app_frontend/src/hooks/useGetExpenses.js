@@ -1,42 +1,39 @@
-// src/hooks/useDeleteExpense.js
-import { useState, useCallback } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import api from "../services/api"
 
-export default function useDeleteExpense() {
+export default function useGetExpenses() {
+  const [expenses, setExpenses] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
-  const deleteExpense = useCallback(async (id) => {
-    if (!id) {
-      const message = "Expense ID is required"
-      setError(message)
-      throw new Error(message)
-    }
-
+  const fetchExpenses = useCallback(async () => {
     setLoading(true)
     setError(null)
 
     try {
-      const res = await api.delete(`/expenses/${id}`, {
-        headers: {
-          Authorization: `Bearer ${sessionStorage.getItem('token')}`,
-        },
-      })
+      const res = await api.get('/expenses')
 
-      return res?.data ?? true
+      // Laravel često vraća { data: [...] }
+      const list = res.data.data ?? res.data
+
+      setExpenses(Array.isArray(list) ? list : [])
     } catch (err) {
-      const message =
-        err.response?.data?.message ||
-        err.message ||
-        "Failed to delete expense"
-
-      setError(message)
-      throw new Error(message)
+      setError(err.response?.data?.message || err.message)
     } finally {
       setLoading(false)
     }
   }, [])
 
-  return { deleteExpense, loading, error }
+  useEffect(() => {
+    fetchExpenses()
+  }, [fetchExpenses])
+
+  return {
+    expenses,
+    loading,
+    error,
+    refetch: fetchExpenses
+  }
 }
+
 

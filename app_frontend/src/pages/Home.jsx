@@ -48,20 +48,31 @@ export default function Home() {
   const [reviewsLoading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch('https://randomuser.me/api/?results=3')
-      .then(res => res.json())
-      .then(data => {
-        setReviews(
-          data.results.map(u => ({
-            id: u.login.uuid,
-            name: `${u.name.first} ${u.name.last}`,
-            picture: u.picture.large
-          }))
-        )
-      })
-      .catch(console.error)
-      .finally(() => setLoading(false))
-  }, [])
+  setReviews([
+    {
+      id: 1,
+      name: "Milica Radić",
+      picture: "https://i.pravatar.cc/150?img=32",
+      text: "Finally I can see where my money goes. Super easy to use.",
+      rating: 5,
+    },
+    {
+      id: 2,
+      name: "Nikola Petrović",
+      picture: "https://i.pravatar.cc/150?img=12",
+      text: "Clean UI and great insights. Helped me save every month.",
+      rating: 5,
+    },
+    {
+      id: 3,
+      name: "Ana Jovanović",
+      picture: "https://i.pravatar.cc/150?img=45",
+      text: "Perfect for tracking expenses and planning my budget.",
+      rating: 5,
+    },
+  ])
+  setLoading(false)
+}, [])
 
   return (
     <Box
@@ -109,21 +120,26 @@ export default function Home() {
               plan ahead, and reach your financial goals faster.
             </Typography>
             <Button
-              variant="contained"
-              sx={{
-                background: 'linear-gradient(90deg, #2979FF, #40C4FF)',
-                px: 4,
-                py: 1.5,
-                textTransform: 'none',
-                fontWeight: 600,
-                '&:hover': {
-                  background: 'linear-gradient(90deg, #1565C0, #00B0FF)',
-                },
-              }}
-              onClick={() => navigate('/expenses')}
-            >
-              Start tracking
-            </Button>
+  variant="contained"
+  onClick={() => navigate('/expenses')}
+  sx={{
+    background: 'linear-gradient(90deg, #10B981, #34D399)',
+    boxShadow: '0 10px 24px rgba(16,185,129,0.25)',
+    borderRadius: 2,
+    textTransform: 'none',
+    fontWeight: 600,
+    px: 4,
+    py: 1.4,
+    '&:hover': {
+      background: 'linear-gradient(90deg, #059669, #10B981)',
+      boxShadow: '0 14px 30px rgba(16,185,129,0.32)',
+    },
+  }}
+>
+  Start tracking
+</Button>
+
+
           </Box>
 
           {/* Right: Hero Image */}
@@ -134,7 +150,7 @@ export default function Home() {
             sx={{
               flex: 1,
               width: '100%',
-              maxWidth: 480,
+              maxWidth: 450,
               borderRadius: 3,
               boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
             }}
@@ -178,7 +194,7 @@ export default function Home() {
                     mb: 2,
                     borderRadius: '50%',
                     background:
-                      'linear-gradient(135deg, #2979FF 0%, #40C4FF 100%)',
+                      'linear-gradient(135deg, #10B981 0%, #34D399 100%)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -263,7 +279,7 @@ export default function Home() {
                     </Typography>
                     <Rating value={5} readOnly size="small" sx={{ mb: 1, color: '#FFD700' }} />
                     <Typography sx={{ color: 'rgba(255,255,255,0.85)' }}>
-                      “The service was good.”
+                      “{r.text}”
                     </Typography>
                   </Box>
                 </Grid>
