@@ -22,3 +22,15 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+# Backend
+app_backend/vendor/
+app_backend/storage/
+app_backend/bootstrap/cache/
+
+# Frontend
+app_frontend/node_modules/
+app_frontend/build/
+app_frontend/.env
+
+# Local archive
+do_not_use_backend/

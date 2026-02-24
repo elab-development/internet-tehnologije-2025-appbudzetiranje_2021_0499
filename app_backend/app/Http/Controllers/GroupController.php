@@ -156,6 +156,9 @@ class GroupController extends Controller
         if ($user->role !== 'regular') {
             return response()->json(['error' => 'You do not have permission.'], 403);
         }
+        $data = $request->validate([
+            'user_id' => 'required|integer|exists:users,id',
+        ]);
 
         $group = Group::with('users')->find($id);
         if (! $group) {

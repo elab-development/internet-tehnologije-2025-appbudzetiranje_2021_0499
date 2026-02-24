@@ -36,4 +36,10 @@ class Group extends Model
         return $this->belongsToMany(User::class)
                     ->withTimestamps();
     }
+
+     public function groupMessage()
+    {
+        return $this->belongsToMany(GroupMessage::class)
+                    ->withTimestamps();
+    }
 }

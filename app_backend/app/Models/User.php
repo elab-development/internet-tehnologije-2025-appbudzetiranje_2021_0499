@@ -58,4 +58,9 @@ class User extends Authenticatable
             set: fn($value) => bcrypt($value)
         );
     }
+     public function groupMessage()
+    {
+        return $this->belongsToMany(GroupMessage::class)
+                    ->withTimestamps();
+    }
 }

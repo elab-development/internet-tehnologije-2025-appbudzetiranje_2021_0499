@@ -173,4 +173,53 @@ class SavingsReportController extends Controller
 
         return response()->json(['statistics' => $stats]);
     }
+     
+    
+     public function analytics($id)
+    {
+        $user = Auth::user();
+        if (! $user) {
+            return response()->json(['error' => 'Unauthenticated.'], 401);
+        }
+        if ($user->role !== 'regular') {
+            return response()->json(['error' => 'You do not have permission.'], 403);
+        }
+
+        $report = SavingsReport::with('expenses')->find($id);
+        if (! $report || $report->user_id !== $user->id) {
+            return response()->json(['error' => 'Report not found.'], 404);
+        }
+
+        // Pull expenses (ordered newest first)
+        $expenses = $report->expenses()->orderBy('date', 'desc')->get();
+
+        // Simple aggregates for the pop-up
+        $total = $expenses->sum('amount');
+        $count = $expenses->count();
+        $avg   = $count ? round($total / $count, 2) : 0;
+
+        // Optional breakdowns useful for charts/tables in the modal
+        $byCategory = $expenses->groupBy('category')->map(function ($g) {
+            return [
+                'count' => $g->count(),
+                'total' => $g->sum('amount'),
+            ];
+        });
+
+        return response()->json([
+            'report' => [
+                'id'    => $report->id,
+                'year'  => $report->year,
+                'month' => $report->month,
+                'notes' => $report->notes,
+            ],
+            'summary' => [
+                'expenses_count'  => $count,
+                'total_expenses'  => $total,
+                'average_expense' => $avg,
+            ],
+            'by_category' => $byCategory, // { "Food": {count, total}, ... }
+            'expenses'    => ExpenseResource::collection($expenses),
+        ]);
+    }
 }
