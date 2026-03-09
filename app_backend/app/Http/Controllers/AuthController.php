@@ -7,11 +7,12 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
+
+
 class AuthController extends Controller
 {
-    /**
-     * Register a new user.
-     */
+
+    
     public function register(Request $request)
     {
         // Validate input
@@ -49,9 +50,7 @@ class AuthController extends Controller
         ], 201);
     }
 
-    /**
-     * Log in a user.
-     */
+    
     public function login(Request $request)
     {
         // Validate input
