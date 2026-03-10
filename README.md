@@ -1,59 +1,177 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Savely
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+**SAVELY** je moderna SPA (Single Page Application) za planiranje troškova, vođenje ličnih finansija i kolaboraciju kroz štedne grupe. Frontend je razvijen u **React** + **MUI**, a backend u **Laravelu** (API + Sanctum autentikacija). U sklopu aplikacije postoje napredne analitike (Recharts), administrativni modul, kao i “grupe” sa chat-om i pretragom članova.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+# Tehnologije
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+Projekat koristi sledeće tehnologije:
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- React
+- Laravel
+- MySQL
+- Docker
+- Docker Compose
+- Nginx
+- PHP-FPM
 
-## Learning Laravel
+---
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+# Struktura projekta
+project-root
+│
+├── app_backend
+│ └── Laravel backend aplikacija
+│
+├── app_frontend
+│ └── React frontend aplikacija
+│
+├── docker-compose.yml
+│
+└── README.md
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
 
-## Laravel Sponsors
+---
+## Korisničke uloge i prava
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### 1) Neulogovani korisnik
+- Može da pristupi **/ (login)** i **/register**.
+- Nema uvid u podatke niti API pozive pod auth middleware-om.
+- Posle uspešne prijave session se čuva u `sessionStorage` (`token`, `user`).
 
-### Premium Partners
+### 2) Regularan korisnik
+- Pristupa **Home**, **Track Expenses**, **Savings Reports**, **My Savings Groups**.
+- **Troškovi:** pun CRUD i sortiranja/filtriranja.
+- **Izveštaji:** pravljenje mesečnih izveštaja, analitika i pregled stavki.
+- **Grupe:** kreiranje (postaje *owner*), učlanjenje/napuštanje; *owner* može edit/ delete; chat dostupnan samo članovima.
+- **Vidljivost dugmadi u grupama:** „Members/Chat“ su skriveni dok korisnik ne postane član.
+- Nema pristup admin modulima.
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+### 3) Administrator
+- Posle logovanja preusmerava se na **/admin-dashboard**.
+- Vidi linkove: **Admin Dashboard** i **Users Management**.
+- **Admin Dashboard:** globalne statistike (Top 8 meseci po sumi, trend 12 meseci, KPI čipovi); widget za najnovije vesti; dugme za slanje izveštaja na e-mail.
+- **Users Management:** lista *regular* korisnika, pretraga, brisanje, CSV eksport.
+- Nema manipulaciju tuđim ličnim podacima mimo navedenog.
 
-## Contributing
+---
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## Stranice i UI moduli
 
-## Code of Conduct
+- **Auth.jsx** – Login/Registracija, upload avatara, role-based redirect (admin → `/admin-dashboard`, ostali → `/home`).
+- **Home.jsx** – dobrodošlica i kratki set CTA/feature kartica.
+- **TrackExpenses.jsx** – grid kartica troškova, filteri (kategorija, sort).
+- **SavingsReports.jsx** – kartice mesečnih izveštaja, „View analytics“ i „View expenses“ modali.
+- **MySavingsGroups.jsx** – mreža kartica grupa (fiksna širina, 6 po stranici), badge privatnosti, Join/Leave na vrhu, članovi + chat modal; pretraga korisnika sa avatarom i status tačkom.
+- **AdminDashboard.jsx** – KPI, dva grafa (Bar/Area), slider News widget, „Email report“ modal.
+- **UserManagement.jsx** – tabela sa avatarom, imenom, statusom, datumom registracije, akcije (Delete), dugme „Export CSV“.
+- **NavigationMenu.jsx** – role-aware linkovi (administrator vidi samo Admin Dashboard i Users Management).
+- **Footer.jsx** – lagani, fiksni footer.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
 
-## Security Vulnerabilities
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+# Pokretanje aplikacije
 
-## License
+Aplikacija se pokreće pomoću **Docker Compose**.
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## 1. Kloniranje repozitorijuma
+git clone <repo-url>
+cd <repo-folder>
+
+
+## 2. Pokretanje aplikacije
+docker compose up -d --build
+
+
+## 3. Provera servisa
+docker compose ps
+
+
+---
+
+# Pristup aplikaciji
+
+Frontend aplikacija:
+http://localhost:3000
+
+
+Backend API:
+http://localhost:8000
+
+
+---
+
+# Docker servisi
+
+Docker Compose pokreće tri servisa:
+
+### frontend
+React aplikacija koja predstavlja korisnički interfejs.
+
+### backend
+Laravel REST API koji obrađuje zahteve i upravlja autentikacijom korisnika.
+
+### db
+MySQL baza podataka koja čuva sve podatke aplikacije.
+
+---
+
+# Autentikacija
+
+Aplikacija koristi **Bearer token autentikaciju**.
+
+Primer login zahteva:
+curl -X POST http://localhost:8000/api/login
+
+-H "Content-Type: application/json"
+-d '{"email":"test@example.com
+","password":"password"}'
+
+
+Uspešan odgovor vraća token koji se koristi za pristup zaštićenim rutama.
+
+Primer zahteva sa tokenom:
+curl http://localhost:8000/api/expenses
+-H "Authorization: Bearer <TOKEN>"
+
+
+---
+
+# API dokumentacija
+
+API dokumentacija je generisana pomoću **Swagger (OpenAPI)** alata i dostupna je na:
+http://localhost:8000/api/documentation
+
+
+---
+
+
+# Git workflow
+
+Projekat koristi sledeću strukturu grana:
+main – stabilna verzija projekta
+develop – integraciona grana
+feature/* – razvoj pojedinačnih funkcionalnosti
+
+
+Feature grane u projektu:
+feature/core-auth
+feature/api
+feature/frontend
+feature/docker
+
+
+---
+
+# Bezbednost
+
+Aplikacija implementira osnovne bezbednosne mehanizme:
+
+- CORS zaštitu
+- SQL Injection zaštitu putem ORM-a
+- validaciju korisničkog unosa
+
+---
+
+
