@@ -147,14 +147,20 @@ class SavingsReportController extends Controller
         if (! $user) {
             return response()->json(['error' => 'Unauthenticated.'], 401);
         }
-        if ($user->role !== 'regular') {
-            return response()->json(['error' => 'You do not have permission.'], 403);
-        }
+        if (!in_array($user->role, ['regular', 'administrator'])) {
+    return response()->json(['error' => 'You do not have permission.'], 403);
+}
 
-        $reports = SavingsReport::where('user_id', $user->id)
-            ->withCount('expenses')
-            ->withSum('expenses', 'amount')
-            ->get();
+        if ($user->role === 'administrator') {
+    $reports = SavingsReport::withCount('expenses')
+        ->withSum('expenses', 'amount')
+        ->get();
+} else {
+    $reports = SavingsReport::where('user_id', $user->id)
+        ->withCount('expenses')
+        ->withSum('expenses', 'amount')
+        ->get();
+}
 
         $stats = $reports->map(function ($report) {
             $count = $report->expenses_count;

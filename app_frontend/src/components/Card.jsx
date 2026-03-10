@@ -5,7 +5,9 @@ import {
   CardActions,
   Typography,
   Box,
-  IconButton
+  IconButton,
+   Stack,
+  Button
 } from '@mui/material'
 import RestartAltIcon    from '@mui/icons-material/RestartAlt'
 import EditIcon          from '@mui/icons-material/Edit'
@@ -16,6 +18,9 @@ import FastfoodIcon      from '@mui/icons-material/Fastfood'
 import LocalPharmacyIcon from '@mui/icons-material/LocalPharmacy'
 import FitnessCenterIcon from '@mui/icons-material/FitnessCenter'
 import TheatersIcon      from '@mui/icons-material/Theaters'
+import InsightsIcon      from '@mui/icons-material/Insights'
+import ReceiptLongIcon   from '@mui/icons-material/ReceiptLong'
+
 
 const categoryIcons = {
   shopping: ShoppingCartIcon,
@@ -26,7 +31,8 @@ const categoryIcons = {
   bills: DescriptionIcon,
 }
 
-export default function Card({ type, item, onMonth, onEdit, onDelete }) {
+export default function Card({ type, item, onMonth, onEdit, onDelete, onViewAnalytics,
+  onViewExpenses }) {
   // **Brute-force** fixed sizing:
   const cardSx = {
     width: 360,
@@ -87,7 +93,7 @@ export default function Card({ type, item, onMonth, onEdit, onDelete }) {
   }
 
   if (type === 'report') {
-    const { year, month, notes } = item
+    const { id, year, month, notes } = item
     return (
       <MUICard elevation={0} sx={cardSx}>
         <CardContent sx={{ overflowY: 'auto', color: '#FFF' }}>
@@ -101,6 +107,42 @@ export default function Card({ type, item, onMonth, onEdit, onDelete }) {
             {notes || '—'}
           </Typography>
         </CardContent>
+         {/* Bottom-aligned actions (balanced, full width) */}
+        <CardActions sx={{ px: 2, pb: 2 }}>
+          <Stack direction="row" spacing={1.5} width="100%">
+            <Button
+              fullWidth
+              size="medium"
+              startIcon={<InsightsIcon />}
+              onClick={() => onViewAnalytics?.(id)}
+              sx={{
+                textTransform: 'none',
+                color: '#0E1326',
+                background: 'linear-gradient(90deg,#7BD3FF,#40C4FF)',
+                fontWeight: 700,
+                '&:hover': { background: 'linear-gradient(90deg,#64C8FF,#18B6FF)' }
+              }}
+            >
+              View Analytics
+            </Button>
+            <Button
+              fullWidth
+              size="medium"
+              variant="outlined"
+              startIcon={<ReceiptLongIcon />}
+              onClick={() => onViewExpenses?.(id)}
+              sx={{
+                textTransform: 'none',
+                color: '#E6EEFF',
+                borderColor: 'rgba(255,255,255,0.25)',
+                fontWeight: 700,
+                '&:hover': { borderColor: '#40C4FF', background: 'rgba(64,196,255,0.08)' }
+              }}
+            >
+              View Expenses
+            </Button>
+          </Stack>
+        </CardActions>
       </MUICard>
     )
   }

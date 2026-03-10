@@ -8,6 +8,10 @@ import SavingsReports from "./pages/SavingsReports";
 
 import NavigationMenu from "./components/NavigationMenu";
 import Footer from "./components/Footer";
+import MySavingsGroups from "./pages/MySavingsGroups";
+import AdminDashboard from "./pages/AdminDashboard";
+import UserManagement from "./pages/UserManagement";
+
 
 function RequireAuth({ children }) {
   const token = sessionStorage.getItem("token");
@@ -40,6 +44,10 @@ export default function App() {
         <Route path="/home" element={withLayout(Home)} />
         <Route path="/expenses/*" element={withLayout(TrackExpenses)} />
         <Route path="/reports/*" element={withLayout(SavingsReports)} />
+         <Route path="/savings-reports" element={withLayout(SavingsReports)} />
+        <Route path="/my-savings-groups" element={withLayout(MySavingsGroups)} />
+        <Route path="/admin-dashboard" element={withLayout(AdminDashboard)} />
+<Route path="/user-management" element={withLayout(UserManagement)} />
 
         {/* default */}
         <Route

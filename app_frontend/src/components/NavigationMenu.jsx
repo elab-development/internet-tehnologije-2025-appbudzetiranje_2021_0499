@@ -1,5 +1,5 @@
 // src/components/NavigationMenu.jsx
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import {
   AppBar,
   Toolbar,
@@ -72,11 +72,21 @@ export default function NavigationMenu() {
   const token     = sessionStorage.getItem('token')
   const [anchorEl, setAnchorEl] = useState(null)
 
-  const items = [
-    { label: 'Home',           path: '/home' },
-    { label: 'Track Expenses', path: '/expenses' },
-    { label: 'Savings Reports',path: '/reports' },
-  ]
+  // For admins: show ONLY the two admin items. For others: show the regular app nav.
+    const items = useMemo(() => {
+      if (user?.role === 'administrator') {
+        return [
+          { label: 'Admin Dashboard', path: '/admin-dashboard' },
+          { label: 'Users Management', path: '/user-management' },
+        ]
+      }
+      return [
+        { label: 'Home',              path: '/home' },
+        { label: 'Track Expenses',    path: '/expenses' },
+        { label: 'Savings Reports',   path: '/savings-reports' },
+        { label: 'My Savings Groups', path: '/my-savings-groups' },
+      ]
+    }, [user?.role])
 
   const handleMenuOpen = e => setAnchorEl(e.currentTarget)
   const handleMenuClose = () => setAnchorEl(null)

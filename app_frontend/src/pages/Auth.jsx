@@ -95,21 +95,26 @@ const handleSubmit = async e => {
 
     const { data } = await axios.post(url, payload)
 
-   sessionStorage.setItem('token', data.token)
-sessionStorage.setItem('user', JSON.stringify(data.user))
+    if (!isRegister) {
+        // persist session
+        sessionStorage.setItem('token', data.token)
+        sessionStorage.setItem('user', JSON.stringify(data.user))
 
-navigate('/home')
-  } catch (err) {
-    setError(
-  err.response?.data?.message ||
-  JSON.stringify(err.response?.data) ||
-  err.message
-)
-
-  } finally {
-    setLoading(false)
+        // route by role
+        const dest =
+          (data?.user?.role === 'administrator') ? '/admin-dashboard' : '/home'
+        window.location.replace(dest);
+      } else {
+        // after registering, go back to login screen
+        navigate('/')
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || 'Something went wrong')
+    } finally {
+      setLoading(false)
+    }
   }
-}
+
 
 
   return (
